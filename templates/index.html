@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe AI</title>
+    <style>
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: lightblue;
+            font-size: 50px;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic Tac Toe</h1>
+    <div id="board"></div>
+    <button onclick="resetGame()">Reset Game</button>
+
+    <script>
+        const boardElement = document.getElementById("board");
+
+        function renderBoard(board) {
+            boardElement.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.classList.add('cell');
+                cellElement.textContent = cell || '';
+                cellElement.addEventListener('click', () => makeMove(index));
+                boardElement.appendChild(cellElement);
+            });
+        }
+
+        async function makeMove(position) {
+            const response = await fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ position }),
+            });
+            const data = await response.json();
+            if (data.status === "Success") {
+                renderBoard(data.board);
+            } else if (data.status === "Game over") {
+                alert(`Game Over! Winner: ${data.winner}`);
+                renderBoard(data.board);
+            }
+        }
+
+        async function resetGame() {
+            const response = await fetch('/reset', {
+                method: 'POST',
+            });
+            const data = await response.json();
+            renderBoard(data.board);
+        }
+
+        resetGame();  // Reset the game on page load
+    </script>
+</body>
+</html>
